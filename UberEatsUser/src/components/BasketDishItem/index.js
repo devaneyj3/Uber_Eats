@@ -18,10 +18,6 @@ const styles = StyleSheet.create({
 		alignItems: "center",
 		marginVertical: 15,
 	},
-	quantity: {
-		fontSize: 25,
-		marginHorizontal: 20,
-	},
 	quantityContainer: {
 		backgroundColor: "lightgrey",
 		paddingHorizontal: 5,
