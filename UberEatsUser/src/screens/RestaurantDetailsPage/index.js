@@ -5,15 +5,21 @@ import { Ionicons } from "@expo/vector-icons";
 import restaurants from "../../../assets/data/restaurants.json";
 import DishListItem from "../../components/DishListItem";
 import Header from "./header";
+import { useRoute, useNavigation } from "@react-navigation/native";
 
-const restaurant = restaurants[0];
 const RestaurantDetailsScreen = () => {
+	const navigation = useNavigation();
+	const route = useRoute();
+
+	const { id } = route.params;
+	const restaurant = restaurants[0];
+
 	return (
 		<View style={styles.screen}>
 			<FlatList
 				ListHeaderComponent={Header}
 				data={restaurant.dishes}
-				keyExtractor={(item) => item.id}
+				keyExtractor={(item) => item.name}
 				renderItem={({ item }) => <DishListItem dish={item} />}
 			/>
 			<Ionicons
@@ -21,6 +27,7 @@ const RestaurantDetailsScreen = () => {
 				size={45}
 				color="white"
 				style={styles.iconContainer}
+				onPress={() => navigation.goBack()}
 			/>
 		</View>
 	);
