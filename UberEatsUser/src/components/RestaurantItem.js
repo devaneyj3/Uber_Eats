@@ -24,11 +24,12 @@ const RestaurantItem = ({ restaurant }) => {
 					<Text style={styles.title}>{name}</Text>
 					{/* price */}
 					<Text style={styles.subtitle}>
-						${deliveryFee} &#8226; {minDeliveryTime}-{maxDeliveryTime} minutes
+						${deliveryFee.toFixed(2)} &#8226; {minDeliveryTime}-
+						{maxDeliveryTime} minutes
 					</Text>
 				</View>
 				<View style={styles.rating}>
-					<Text>{rating}</Text>
+					<Text>{rating.toFixed(1)}</Text>
 				</View>
 			</View>
 		</Pressable>

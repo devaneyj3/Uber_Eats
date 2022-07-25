@@ -10,12 +10,18 @@ import RestaurantDetailsScreen from "../screens/RestaurantDetailsPage";
 import { Foundation, MaterialIcons, FontAwesome5 } from "@expo/vector-icons";
 import Profile from "../screens/ProfileScreen";
 
+import { useAuthContext } from "../contexts/AuthContext";
 const Stack = createNativeStackNavigator();
 
 const RootNavigator = () => {
+	const { dbUser } = useAuthContext();
 	return (
 		<Stack.Navigator screenOptions={{ headerShown: false }}>
-			<Stack.Screen name="Home" component={HomeTabs} />
+			{dbUser ? (
+				<Stack.Screen name="HomeTabs" component={HomeTabs} />
+			) : (
+				<Stack.Screen name="Profile" component={Profile} />
+			)}
 		</Stack.Navigator>
 	);
 };

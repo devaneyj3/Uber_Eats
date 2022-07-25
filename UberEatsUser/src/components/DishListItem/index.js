@@ -16,7 +16,7 @@ const DishListItem = ({ dish }) => {
 				<Text style={styles.description} numberOfLines={2}>
 					{description}
 				</Text>
-				<Text style={styles.price}>${price}</Text>
+				<Text style={styles.price}>${price.toFixed(2)}</Text>
 			</View>
 			{image && <Image source={{ uri: image }} style={styles.image} />}
 		</Pressable>

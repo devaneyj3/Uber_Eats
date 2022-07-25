@@ -1,18 +1,15 @@
 import React from "react";
 import { View, Text, Image, StyleSheet } from "react-native";
 
-import restaurants from "../../../assets/data/restaurants.json";
-
-const restaurant = restaurants[0];
-const RestaurantDetailsScreen = () => {
+const RestaurantDetailsScreen = ({ restaurant }) => {
 	return (
 		<View style={styles.screen}>
 			<Image source={{ uri: restaurant.image }} style={styles.image} />
 			<View style={styles.container}>
 				<Text style={styles.title}>{restaurant.name}</Text>
 				<Text style={styles.subtitle}>
-					${restaurant.deliveryFee} &#8226; {restaurant.minDeliveryTime}-
-					{restaurant.maxDeliveryTime} minutes
+					${restaurant.deliveryFee.toFixed(2)} &#8226;{" "}
+					{restaurant.minDeliveryTime}-{restaurant.maxDeliveryTime} minutes
 				</Text>
 				<Text style={styles.menuTitle}>Menu</Text>
 			</View>

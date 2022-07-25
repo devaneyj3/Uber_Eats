@@ -1,63 +1,103 @@
-import { View, Text, TextInput, StyleSheet, Button } from "react-native";
+import { Alert, Text, TextInput, StyleSheet, Button } from "react-native";
 import React, { useEffect, useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { Auth } from "aws-amplify";
+import { Auth, DataStore } from "aws-amplify";
+import { User } from "../../models";
+import { useAuthContext } from "../../contexts/AuthContext";
+import { useNavigation } from "@react-navigation/native";
 
 const Profile = () => {
-  const [name, setName] = useState("");
-  const [address, setAddress] = useState("");
-  const [lat, setLat] = useState("0");
-  const [lng, setLng] = useState("0");
+	const { sub, setDbUser, dbUser } = useAuthContext();
+	const [name, setName] = useState(dbUser?.name || "");
+	const [address, setAddress] = useState(dbUser?.address || "");
+	const [lat, setLat] = useState(dbUser?.lat + "" || "0");
+	const [lng, setLng] = useState(dbUser?.lng + "" || "0");
+	const navigation = useNavigation();
 
-  const onSave = () => { };
+	const onSave = async () => {
+		if (dbUser) {
+			await updateUser();
+		} else {
+			await createUser();
+		}
+		navigation.goBack();
+	};
+	// update user
+	const updateUser = async () => {
+		const user = await DataStore.save(
+			User.copyOf(dbUser, (updateUser) => {
+				updateUser.name = name;
+				updateUser.address = address;
+				updateUser.lat = parseFloat(lat);
+				updateUser.lng = parseFloat(lng);
+			})
+		);
+		setDbUser(user);
+	};
+	const createUser = async () => {
+		try {
+			const user = await DataStore.save(
+				new User({
+					sub,
+					name,
+					address,
+					lat: parseFloat(lat),
+					lng: parseFloat(lng),
+				})
+			);
+		} catch (e) {
+			Alert.alert(e.message);
+		}
+	};
+	console.log(dbUser);
 
-  return (
-    <SafeAreaView>
-      <Text style={styles.title}>Profile</Text>
-      <TextInput
-        value={name}
-        onChangeText={setName}
-        placeholder="Name"
-        style={styles.input}
-      />
-      <TextInput
-        value={address}
-        onChangeText={setAddress}
-        placeholder="Address"
-        style={styles.input}
-      />
-      <TextInput
-        value={lat}
-        onChangeText={setLat}
-        placeholder="Latitude"
-        style={styles.input}
-        keyboardType="numeric"
-      />
-      <TextInput
-        value={lng}
-        onChangeText={setLng}
-        placeholder="Longitude"
-        style={styles.input}
-      />
-      <Button onPress={onSave} title="Save" style={{ margin: 10 }} />
-      <Button onPress={() => Auth.signOut()} title="Sign out" />
-    </SafeAreaView>
-  );
+	return (
+		<SafeAreaView>
+			<Text style={styles.title}>Profile</Text>
+			<TextInput
+				value={name}
+				onChangeText={setName}
+				placeholder="Name"
+				style={styles.input}
+			/>
+			<TextInput
+				value={address}
+				onChangeText={setAddress}
+				placeholder="Address"
+				style={styles.input}
+			/>
+			<TextInput
+				value={lat}
+				onChangeText={setLat}
+				placeholder="Latitude"
+				style={styles.input}
+				keyboardType="numeric"
+			/>
+			<TextInput
+				value={lng}
+				onChangeText={setLng}
+				placeholder="Longitude"
+				style={styles.input}
+			/>
+			<Button onPress={onSave} title="Save" style={{ margin: 10 }} />
+			<Button onPress={() => Auth.signOut()} title="Sign out" />
+		</SafeAreaView>
+	);
 };
 
 const styles = StyleSheet.create({
-  title: {
-    fontSize: 30,
-    fontWeight: "bold",
-    textAlign: "center",
-    margin: 10,
-  },
-  input: {
-    margin: 10,
-    backgroundColor: "white",
-    padding: 15,
-    borderRadius: 5,
-  },
+	title: {
+		fontSize: 30,
+		fontWeight: "bold",
+		textAlign: "center",
+		margin: 10,
+	},
+	input: {
+		margin: 10,
+		backgroundColor: "white",
+		padding: 15,
+		borderRadius: 5,
+	},
 });
 
 export default Profile;

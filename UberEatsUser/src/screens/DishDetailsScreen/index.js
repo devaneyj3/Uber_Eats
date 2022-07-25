@@ -1,15 +1,35 @@
-import React from "react";
-import { View, Text, StyleSheet, Pressable } from "react-native";
-
-import restaurants from "../../../assets/data/restaurants.json";
+import React, { useEffect, useState } from "react";
+import {
+	View,
+	Text,
+	StyleSheet,
+	Pressable,
+	ActivityIndicator,
+} from "react-native";
 import { AntDesign } from "@expo/vector-icons";
-import { useNavigation } from "@react-navigation/native";
-
-const dish = restaurants[0].dishes[0];
+import { useNavigation, useRoute } from "@react-navigation/native";
+import { DataStore } from "@aws-amplify/datastore";
+import { Dish } from "../../models";
 
 const DishDetailsScreen = () => {
+	const [dish, setDish] = useState(null);
+
 	const navigation = useNavigation();
 	const [quantity, setQuantity] = React.useState(1);
+
+	const route = useRoute();
+
+	const { id } = route.params;
+
+	useEffect(() => {
+		if (id) {
+			getDishDetails();
+		}
+	}, [id]);
+	const getDishDetails = async () => {
+		const dishRes = await DataStore.query(Dish, id);
+		setDish(dishRes);
+	};
 
 	const onMinus = () => {
 		if (quantity > 1) {
@@ -21,11 +41,15 @@ const DishDetailsScreen = () => {
 		setQuantity(quantity + 1);
 	};
 	//  calculate total price
-	const totalPrice = quantity * dish.price;
-
+	const getTotalPrice = () => {
+		return (quantity * dish.price).toFixed(2);
+	};
 	const onPress = () => {
 		navigation.navigate("Basket");
 	};
+	if (!dish) {
+		return <ActivityIndicator size={"large"} color="grey" />;
+	}
 	return (
 		<View style={styles.page}>
 			<Text style={styles.title}>{dish.name}</Text>
@@ -48,7 +72,7 @@ const DishDetailsScreen = () => {
 			</View>
 			<Pressable style={styles.button} onPress={onPress}>
 				<Text style={styles.buttonText}>
-					Add {quantity} to basket &#8226; ${totalPrice.toFixed(2)}
+					Add {quantity} to basket &#8226; ${getTotalPrice()}
 				</Text>
 			</Pressable>
 		</View>

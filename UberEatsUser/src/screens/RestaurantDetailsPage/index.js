@@ -1,24 +1,48 @@
-import React from "react";
-import { View, FlatList, StyleSheet } from "react-native";
+import React, { useState, useEffect } from "react";
+import { View, FlatList, StyleSheet, ActivityIndicator } from "react-native";
+import { DataStore } from "@aws-amplify/datastore";
+import { Restaurant, Dish } from "../../models";
 import { Ionicons } from "@expo/vector-icons";
 
-import restaurants from "../../../assets/data/restaurants.json";
 import DishListItem from "../../components/DishListItem";
 import Header from "./header";
 import { useRoute, useNavigation } from "@react-navigation/native";
 
 const RestaurantDetailsScreen = () => {
+	const [restaurant, setRestaurant] = useState(null);
+	const [dishes, setDishes] = useState([]);
 	const navigation = useNavigation();
 	const route = useRoute();
 
 	const { id } = route.params;
-	const restaurant = restaurants[0];
 
+	useEffect(() => {
+		if (id) {
+			getRestaurantDetails();
+			getDishes();
+		}
+		getRestaurantDetails();
+	}, [id]);
+
+	const getRestaurantDetails = async () => {
+		const restaurantRes = await DataStore.query(Restaurant, id);
+		setRestaurant(restaurantRes);
+	};
+	const getDishes = async () => {
+		const dishesRes = await DataStore.query(Dish, (dish) =>
+			dish.restaurantID("eq", id)
+		);
+
+		setDishes(dishesRes);
+	};
+	if (!restaurant) {
+		return <ActivityIndicator size={"large"} color="grey" />;
+	}
 	return (
 		<View style={styles.screen}>
 			<FlatList
-				ListHeaderComponent={Header}
-				data={restaurant.dishes}
+				ListHeaderComponent={<Header restaurant={restaurant} />}
+				data={dishes}
 				keyExtractor={(item) => item.name}
 				renderItem={({ item }) => <DishListItem dish={item} />}
 			/>
