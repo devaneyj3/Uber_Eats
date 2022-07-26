@@ -1,11 +1,23 @@
 import React from "react";
-import { View, Text, FlatList, StyleSheet } from "react-native";
+import { View, Text, FlatList, StyleSheet, Pressable } from "react-native";
 import BasketDishItem from "../../components/BasketDishItem";
 
 import { useBasketContext } from "../../contexts/BasketContext";
 
+import { useOrdersContext } from "../../contexts/OrdersContext";
+
+import { useNavigation } from "@react-navigation/native";
+
 const BasketScreen = () => {
 	const { restaurant, basketDishes, totalBasketPrice } = useBasketContext();
+	const navigation = useNavigation();
+
+	const { createOrder } = useOrdersContext();
+
+	const onOrder = () => {
+		createOrder();
+		navigation.goBack();
+	};
 
 	return (
 		<View style={styles.page}>
@@ -19,11 +31,11 @@ const BasketScreen = () => {
 				renderItem={({ item }) => <BasketDishItem dish={item} />}
 			/>
 			<View style={styles.seperator} />
-			<View style={styles.button}>
+			<Pressable onPress={onOrder} style={styles.button}>
 				<Text style={styles.buttonText}>
 					Create Order &#8226; ${totalBasketPrice.toFixed(2)}
 				</Text>
-			</View>
+			</Pressable>
 		</View>
 	);
 };

@@ -6,6 +6,7 @@ import awsconfig from "./src/aws-exports";
 import { withAuthenticator } from "aws-amplify-react-native";
 import AuthContextProvider from "./src/contexts/AuthContext";
 import BasketContextProvider from "./src/contexts/BasketContext";
+import OrdersContextProvider from "./src/contexts/OrdersContext";
 
 Amplify.configure({ ...awsconfig, Analytics: { disabled: true } });
 
@@ -13,10 +14,12 @@ const App = () => {
 	return (
 		<AuthContextProvider>
 			<BasketContextProvider>
-				<NavigationContainer>
-					<RootNavigator />
-					<StatusBar style="light" />
-				</NavigationContainer>
+				<OrdersContextProvider>
+					<NavigationContainer>
+						<RootNavigator />
+						<StatusBar style="light" />
+					</NavigationContainer>
+				</OrdersContextProvider>
 			</BasketContextProvider>
 		</AuthContextProvider>
 	);

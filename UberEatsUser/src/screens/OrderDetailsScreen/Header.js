@@ -1,11 +1,7 @@
 import React from "react";
 import { View, Text, StyleSheet, Image } from "react-native";
 
-import orders from "../../../assets/data/orders.json";
-
-const order = orders[0];
-
-const OrderDetailsHeader = () => {
+const OrderDetailsHeader = ({ order }) => {
 	return (
 		<View>
 			<View style={styles.screen}>

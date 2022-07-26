@@ -1,18 +1,34 @@
-import React from "react";
-import { FlatList, StyleSheet } from "react-native";
+import React, { useState, useEffect } from "react";
+import { FlatList, StyleSheet, ActivityIndicator } from "react-native";
 
 import OrderDetailsHeader from "./Header";
 
-import restaurants from "../../../assets/data/restaurants.json";
 import BasketDishItem from "../../components/BasketDishItem";
 
-const restaurant = restaurants[0];
+import { useOrdersContext } from "../../contexts/OrdersContext";
 
+import { useRoute } from "@react-navigation/native";
 const OrderDetails = () => {
+	const [order, setOrder] = useState();
+	const { getOrder } = useOrdersContext();
+
+	const route = useRoute();
+	const { id } = route?.params;
+
+	useEffect(() => {
+		getOrder(id).then(setOrder);
+	}, [id]);
+
+	console.log("order", order);
+
+	if (!order) {
+		return <ActivityIndicator size={"large"} color="grey" />;
+	}
+
 	return (
 		<FlatList
-			ListHeaderComponent={OrderDetailsHeader}
-			data={restaurant.dishes}
+			ListHeaderComponent={<OrderDetailsHeader order={order} />}
+			data={order.dishes}
 			keyExtractor={(item) => item.id}
 			renderItem={({ item }) => <BasketDishItem dish={item} />}
 		/>

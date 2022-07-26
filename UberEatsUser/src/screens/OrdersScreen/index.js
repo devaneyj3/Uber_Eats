@@ -1,10 +1,12 @@
 import React from "react";
-import { View, Text, StyleSheet, FlatList } from "react-native";
+import { View, StyleSheet, FlatList } from "react-native";
 
-import orders from "../../../assets/data/orders.json";
 import OrderListItem from "../../components/OrderListItem";
 
+import { useOrdersContext } from "../../contexts/OrdersContext";
+
 const OrdersScreen = () => {
+	const { orders } = useOrdersContext();
 	return (
 		<View style={styles.screen}>
 			<FlatList
