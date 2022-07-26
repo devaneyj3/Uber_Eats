@@ -20,28 +20,37 @@ import { useBasketContext } from "../../contexts/BasketContext";
 const RestaurantDetailsScreen = () => {
 	const [restaurant, setRestaurant] = useState(null);
 	const [dishes, setDishes] = useState([]);
-	const navigation = useNavigation();
+
 	const route = useRoute();
+	const navigation = useNavigation();
 
-	const { setRestaurant: setBasketRestaurant, basket } = useBasketContext();
+	const id = route.params?.id;
 
-	const { id } = route.params;
-
+	const {
+		setRestaurant: setBasketRestaurant,
+		basket,
+		basketDishes,
+	} = useBasketContext();
 	useEffect(() => {
 		if (!id) {
 			return;
 		}
 		setBasketRestaurant(null);
-
+		// fetch the restaurant with the id
 		DataStore.query(Restaurant, id).then(setRestaurant);
 
 		DataStore.query(Dish, (dish) => dish.restaurantID("eq", id)).then(
 			setDishes
 		);
 	}, [id]);
+
 	useEffect(() => {
 		setBasketRestaurant(restaurant);
 	}, [restaurant]);
+
+	if (!restaurant) {
+		return <ActivityIndicator size={"large"} color="gray" />;
+	}
 
 	const viewBasket = () => {
 		navigation.navigate("Basket");
@@ -66,7 +75,9 @@ const RestaurantDetailsScreen = () => {
 			/>
 			{basket && (
 				<Pressable style={styles.button} onPress={viewBasket}>
-					<Text style={styles.buttonText}>View Basket</Text>
+					<Text style={styles.buttonText}>
+						Open basket #({basketDishes.length})
+					</Text>
 				</Pressable>
 			)}
 		</View>
