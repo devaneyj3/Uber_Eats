@@ -1,5 +1,12 @@
 import React, { useState, useEffect } from "react";
-import { View, FlatList, StyleSheet, ActivityIndicator } from "react-native";
+import {
+	View,
+	FlatList,
+	Text,
+	StyleSheet,
+	ActivityIndicator,
+	Pressable,
+} from "react-native";
 import { DataStore } from "@aws-amplify/datastore";
 import { Restaurant, Dish } from "../../models";
 import { Ionicons } from "@expo/vector-icons";
@@ -8,32 +15,36 @@ import DishListItem from "../../components/DishListItem";
 import Header from "./header";
 import { useRoute, useNavigation } from "@react-navigation/native";
 
+import { useBasketContext } from "../../contexts/BasketContext";
+
 const RestaurantDetailsScreen = () => {
 	const [restaurant, setRestaurant] = useState(null);
 	const [dishes, setDishes] = useState([]);
 	const navigation = useNavigation();
 	const route = useRoute();
 
+	const { setRestaurant: setBasketRestaurant, basket } = useBasketContext();
+
 	const { id } = route.params;
 
 	useEffect(() => {
-		if (id) {
-			getRestaurantDetails();
-			getDishes();
+		if (!id) {
+			return;
 		}
-		getRestaurantDetails();
-	}, [id]);
+		setBasketRestaurant(null);
 
-	const getRestaurantDetails = async () => {
-		const restaurantRes = await DataStore.query(Restaurant, id);
-		setRestaurant(restaurantRes);
-	};
-	const getDishes = async () => {
-		const dishesRes = await DataStore.query(Dish, (dish) =>
-			dish.restaurantID("eq", id)
+		DataStore.query(Restaurant, id).then(setRestaurant);
+
+		DataStore.query(Dish, (dish) => dish.restaurantID("eq", id)).then(
+			setDishes
 		);
+	}, [id]);
+	useEffect(() => {
+		setBasketRestaurant(restaurant);
+	}, [restaurant]);
 
-		setDishes(dishesRes);
+	const viewBasket = () => {
+		navigation.navigate("Basket");
 	};
 	if (!restaurant) {
 		return <ActivityIndicator size={"large"} color="grey" />;
@@ -53,6 +64,11 @@ const RestaurantDetailsScreen = () => {
 				style={styles.iconContainer}
 				onPress={() => navigation.goBack()}
 			/>
+			{basket && (
+				<Pressable style={styles.button} onPress={viewBasket}>
+					<Text style={styles.buttonText}>View Basket</Text>
+				</Pressable>
+			)}
 		</View>
 	);
 };
@@ -68,6 +84,17 @@ const styles = StyleSheet.create({
 	image: {
 		width: "100%",
 		aspectRatio: 5 / 3,
+	},
+	button: {
+		backgroundColor: "black",
+		padding: 20,
+		marginTop: "auto",
+		alignItems: "center",
+	},
+	buttonText: {
+		color: "white",
+		fontSize: 20,
+		fontWeight: "600",
 	},
 });
 
