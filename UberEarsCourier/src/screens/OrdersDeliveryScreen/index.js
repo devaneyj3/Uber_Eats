@@ -10,10 +10,10 @@ import { styles } from "./styles";
 
 const order = orders[0];
 
-const OrdersDelivey = () => {
+const OrdersDeliveryScreen = () => {
 	const bottomSheetRef = useRef(null);
 
-	const snapPoints = useMemo(() => ["12%", "90%"], []);
+	const snapPoints = useMemo(() => ["10%", "95%"], []);
 
 	return (
 		<View style={styles.container}>
@@ -56,4 +56,4 @@ const OrdersDelivey = () => {
 	);
 };
 
-export default OrdersDelivey;
+export default OrdersDeliveryScreen;

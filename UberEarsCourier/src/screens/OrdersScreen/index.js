@@ -1,5 +1,5 @@
-import React, { useRef } from "react";
-import { View, Text, useMemo, FlatList } from "react-native";
+import React, { useMemo, useRef } from "react";
+import { View, Text, FlatList } from "react-native";
 
 import orders from "../../../assets/data/orders.json";
 
@@ -10,7 +10,7 @@ import BottomSheet from "@gorhom/bottom-sheet";
 const OrdersScreen = () => {
 	const bottomSheetRef = useRef(null);
 
-	const snapPoints = useMemo(() => ["12%", "90%"], []);
+	const snapPoints = useMemo(() => ["10%", "95%"], []);
 	return (
 		<View style={{ backgroundColor: "lightblue", flex: 1 }}>
 			<BottomSheet

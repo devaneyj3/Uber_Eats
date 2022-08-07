@@ -1,18 +1,22 @@
 import React from "react";
-import { View, Text, Image, StyleSheet } from "react-native";
+import { View, Text, Image, Pressable } from "react-native";
+
+import { useNavigation } from "@react-navigation/native";
 
 import { Entypo } from "@expo/vector-icons";
 
 const OrderItem = ({ order }) => {
+	const navigation = useNavigation();
 	return (
-		<View
+		<Pressable
 			style={{
 				flexDirection: "row",
 				borderColor: "#3FC060",
 				margin: 10,
 				borderWidth: 2,
 				borderRadius: 12,
-			}}>
+			}}
+			onPress={() => navigation.navigate("OrdersDeliveryScreen")}>
 			<Image
 				source={{ uri: order.Restaurant.image }}
 				style={{
@@ -49,13 +53,8 @@ const OrderItem = ({ order }) => {
 					style={{ marginLeft: "auto" }}
 				/>
 			</View>
-		</View>
+		</Pressable>
 	);
 };
-const styles = StyleSheet.create({
-	screen: {
-		flex: 1,
-	},
-});
 
 export default OrderItem;
