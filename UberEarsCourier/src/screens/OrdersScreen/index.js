@@ -1,18 +1,41 @@
 import React, { useMemo, useRef } from "react";
-import { View, Text, FlatList } from "react-native";
+import { View, Text, FlatList, useWindowDimensions } from "react-native";
 
 import orders from "../../../assets/data/orders.json";
 
 import OrderItem from "../../../src/components/OrderItem";
 
+import styles from "./styles";
+
 import BottomSheet from "@gorhom/bottom-sheet";
+
+import { Entypo } from "@expo/vector-icons";
+
+import MapView, { Marker } from "react-native-maps";
 
 const OrdersScreen = () => {
 	const bottomSheetRef = useRef(null);
+	const { height, width } = useWindowDimensions();
 
 	const snapPoints = useMemo(() => ["10%", "95%"], []);
 	return (
-		<View style={{ backgroundColor: "lightblue", flex: 1 }}>
+		<View style={styles.container}>
+			<MapView style={{ height, width }} showsUserLocation followUserLocation>
+				{orders.map((order, index) => (
+					<Marker
+						key={index}
+						coordinate={{
+							latitude: order.Restaurant.lat,
+							longitude: order.Restaurant.lng,
+						}}
+						title={order.Restaurant.name}
+						description={order.Restaurant.address}>
+						<View style={styles.icon_view}>
+							<Entypo name="shop" size={24} color="white" />
+						</View>
+					</Marker>
+				))}
+			</MapView>
 			<BottomSheet
 				ref={bottomSheetRef}
 				snapPoints={snapPoints}
