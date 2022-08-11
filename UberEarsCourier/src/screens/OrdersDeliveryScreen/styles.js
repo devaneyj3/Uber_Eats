@@ -54,7 +54,6 @@ export const styles = StyleSheet.create({
 		marginBottom: 5,
 	},
 	btn_container: {
-		backgroundColor: "#3FC060",
 		marginTop: "auto",
 		margingVertical: 30,
 		marginHorizontal: 10,

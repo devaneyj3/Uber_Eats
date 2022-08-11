@@ -4,6 +4,7 @@ import {
 	Text,
 	useWindowDimensions,
 	ActivityIndicator,
+	Pressable,
 } from "react-native";
 import BottomSheet from "@gorhom/bottom-sheet";
 
@@ -12,8 +13,10 @@ import {
 	Fontisto,
 	Entypo,
 	MaterialIcons,
+	Ionicons,
 } from "@expo/vector-icons";
 
+import { useNavigation } from "@react-navigation/native";
 import orders from "../../../assets/data/orders.json";
 
 import MapView, { Marker } from "react-native-maps";
@@ -21,15 +24,42 @@ import * as Location from "expo-location";
 
 import { styles } from "./styles";
 
+import MapViewDirections from "react-native-maps-directions";
+
 const order = orders[0];
 
+const ORDER_STATUSES = {
+	READY_FOR_PICKUP: "READY_FOR_PICKUP",
+	ACCEPTED: "ACCEPTED",
+	PICKED_UP: "PICKED_UP",
+};
+
 const OrdersDeliveryScreen = () => {
+	const navigation = useNavigation();
 	const { height, width } = useWindowDimensions();
 	const [driverLocation, setDriverLocation] = useState(null);
+	const [deliveryStatus, setDiveryStatus] = useState(
+		ORDER_STATUSES.READY_FOR_PICKUP
+	);
+	const [totalMinutes, setTotalMinutes] = useState(0);
+	const [totalMiles, setTotalMiles] = useState(0);
+
+	const [isDriverClose, setIsDriverClose] = useState(false);
 
 	const bottomSheetRef = useRef(null);
+	const mapRef = useRef(null);
 
-	const snapPoints = useMemo(() => ["10%", "95%"], []);
+	const restaurantLocation = {
+		latitude: order.Restaurant.lat,
+		longitude: order.Restaurant.lng,
+	};
+
+	const deliveryLocation = {
+		latitude: order.User.lat,
+		longitude: order.User.lng,
+	};
+
+	const snapPoints = useMemo(() => ["12%", "95%"], []);
 
 	useEffect(() => {
 		(async () => {
@@ -45,30 +75,106 @@ const OrdersDeliveryScreen = () => {
 				longitude: location.coords.longitude,
 			});
 		})();
+
+		const foregroundSubscription = Location.watchPositionAsync(
+			{
+				accuracy: Location.Accuracy.High,
+				distanceInterval: 100,
+			},
+			(updatedLocation) => {
+				setDriverLocation({
+					latitude: updatedLocation.coords.latitude,
+					longitude: updatedLocation.coords.longitude,
+				});
+			}
+		);
+		return foregroundSubscription;
 	}, []);
-	console.log(driverLocation);
-	console.log("order delivery");
+
 	if (!driverLocation) {
 		return <ActivityIndicator size={"large"} />;
 	}
 
+	const onButtonPress = (order) => {
+		if (deliveryStatus === ORDER_STATUSES.READY_FOR_PICKUP) {
+			bottomSheetRef.current?.collapse();
+			mapRef.current.animateToRegion({
+				latitude: driverLocation.latitude,
+				longitude: driverLocation.longitude,
+				latitudeDelta: 0.01,
+				longitudeDelta: 0.01,
+			});
+			setDiveryStatus(ORDER_STATUSES.ACCEPTED);
+		}
+		if (deliveryStatus === ORDER_STATUSES.ACCEPTED) {
+			bottomSheetRef.current?.collapse();
+			setDiveryStatus(ORDER_STATUSES.PICKED_UP);
+		}
+		if (deliveryStatus === ORDER_STATUSES.PICKED_UP) {
+			bottomSheetRef.current?.collapse();
+			navigation.goBack();
+			console.warn("Order finished");
+		}
+	};
+
+	const renderButtonTitle = () => {
+		if (deliveryStatus === ORDER_STATUSES.READY_FOR_PICKUP) {
+			return "Accept Order";
+		} else if (deliveryStatus === ORDER_STATUSES.ACCEPTED) {
+			return "Pickup Order";
+		} else if (deliveryStatus === ORDER_STATUSES.PICKED_UP) {
+			return "Complete Delivery";
+		}
+	};
+	const isButtonDisabled = () => {
+		if (deliveryStatus === ORDER_STATUSES.READY_FOR_PICKUP) {
+			return false;
+		}
+		if (deliveryStatus === ORDER_STATUSES.ACCEPTED && isDriverClose) {
+			return false;
+		}
+		if (deliveryStatus === ORDER_STATUSES.PICKED_UP && isDriverClose) {
+			console.log("Order Picked up and driver is close to destination");
+			return false;
+		}
+		return true;
+	};
 	return (
 		<View style={styles.container}>
 			<MapView
 				style={{ height, width }}
+				ref={mapRef}
 				showsUserLocation
-				followUserLocation
-				initalRegion={{
+				followsUserLocation
+				initialRegion={{
 					latitude: driverLocation.latitude,
 					longitude: driverLocation.longitude,
 					latitudeDelta: 0.07,
 					longitudeDelta: 0.07,
 				}}>
-				<Marker
-					coordinate={{
-						latitude: order.Restaurant.lat,
-						longitude: order.Restaurant.lng,
+				<MapViewDirections
+					origin={driverLocation}
+					destination={
+						deliveryStatus === ORDER_STATUSES.ACCEPTED
+							? restaurantLocation
+							: deliveryLocation
+					}
+					strokeWidth={10}
+					waypoints={
+						deliveryStatus === ORDER_STATUSES.READY_FOR_PICKUP
+							? [restaurantLocation]
+							: []
+					}
+					strokeColor="#3FC060"
+					apikey={"AIzaSyC8hbngdqzzmYJuwesaUwH5oyOzryq6r1w"}
+					onReady={(result) => {
+						setIsDriverClose(result.distance <= 0.1);
+						setTotalMinutes(result.duration);
+						setTotalMiles(result.distance);
 					}}
+				/>
+				<Marker
+					coordinate={restaurantLocation}
 					title={order.Restaurant.name}
 					description={order.Restaurant.address}>
 					<View style={styles.icon_view}>
@@ -76,29 +182,38 @@ const OrdersDeliveryScreen = () => {
 					</View>
 				</Marker>
 				<Marker
-					coordinate={{
-						latitude: order.User.lat,
-						longitude: order.User.lng,
-					}}
-					User
+					coordinate={deliveryLocation}
 					title={order.User.name}
 					description={order.User.address}>
 					<MaterialIcons name="person-pin" size={24} color="black" />
 				</Marker>
 			</MapView>
+			{deliveryStatus === ORDER_STATUSES.READY_FOR_PICKUP && (
+				<Ionicons
+					onPress={() => navigation.goBack()}
+					name="arrow-back-circle"
+					size={45}
+					color="black"
+					style={{ top: 40, left: 15, position: "absolute" }}
+				/>
+			)}
 			<BottomSheet
 				ref={bottomSheetRef}
 				snapPoints={snapPoints}
 				handleIndicatorStyle={styles.handleIndicator}>
 				<View style={styles.handleIndicatorContainer}>
-					<Text style={styles.routeDetailsText}>14 min</Text>
+					<Text style={styles.routeDetailsText}>
+						{totalMinutes.toFixed(1)} min
+					</Text>
 					<FontAwesome5
 						name="shopping-bag"
 						size={30}
 						color="#3FC060"
 						style={{ marginHorizontal: 10 }}
 					/>
-					<Text style={styles.routeDetailsText}>5 km</Text>
+					<Text style={styles.routeDetailsText}>
+						{totalMiles.toFixed(1)} miles
+					</Text>
 				</View>
 				<View style={styles.deliveryDetailsContainer}>
 					<Text style={styles.restaurantInfo}>{order.Restaurant.name}</Text>
@@ -117,9 +232,18 @@ const OrdersDeliveryScreen = () => {
 						<Text style={styles.foodItem}>Coca-Cola x1</Text>
 					</View>
 				</View>
-				<View style={styles.btn_container}>
-					<Text style={styles.btn}>Accept Order</Text>
-				</View>
+				<Pressable
+					onPress={onButtonPress}
+					disabled={isButtonDisabled()}
+					style={styles.btn_container}>
+					<Text
+						style={{
+							...styles.btn,
+							backgroundColor: isButtonDisabled() ? "grey" : "#3FC060",
+						}}>
+						{renderButtonTitle()}
+					</Text>
+				</Pressable>
 			</BottomSheet>
 		</View>
 	);

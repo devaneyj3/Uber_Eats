@@ -17,7 +17,7 @@ const OrdersScreen = () => {
 	const bottomSheetRef = useRef(null);
 	const { height, width } = useWindowDimensions();
 
-	const snapPoints = useMemo(() => ["10%", "95%"], []);
+	const snapPoints = useMemo(() => ["12%", "95%"], []);
 	return (
 		<View style={styles.container}>
 			<MapView style={{ height, width }} showsUserLocation followUserLocation>
