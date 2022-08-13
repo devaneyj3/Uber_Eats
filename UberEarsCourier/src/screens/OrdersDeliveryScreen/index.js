@@ -26,6 +26,8 @@ import { styles } from "./styles";
 
 import MapViewDirections from "react-native-maps-directions";
 
+import { REACT_APP_DIRECTIONS_API } from "@env";
+
 const order = orders[0];
 
 const ORDER_STATUSES = {
@@ -166,7 +168,7 @@ const OrdersDeliveryScreen = () => {
 							: []
 					}
 					strokeColor="#3FC060"
-					apikey={"AIzaSyC8hbngdqzzmYJuwesaUwH5oyOzryq6r1w"}
+					apikey={REACT_APP_DIRECTIONS_API}
 					onReady={(result) => {
 						setIsDriverClose(result.distance <= 0.1);
 						setTotalMinutes(result.duration);
